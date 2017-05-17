@@ -97,6 +97,24 @@ def ph_mgammleptZWindow(ph_mgammalept,ph_mgammalept_cutValue):
 def ph_HFT_MVA_cut(ph_HFT_MVA, ph_HFT_MVA_cutValue):
   if ph_HFT_MVA >= ph_HFT_MVA_cutValue: 
     return True
+
+def get_mv2c10_bin(mv2c10):
+  jets = []
+  for i in mv2c10:
+    jets.append(abs(i))
+  leading_jet_mv2c10 = max(jets)
+  # sub_leading_jet_mv2c10 = sorted(jets, reverse=True)[1]
+  if leading_jet_mv2c10 < 0.1758475:
+    return 1
+  if leading_jet_mv2c10 >= 0.1758475 and leading_jet_mv2c10 < 0.645925:
+    return 2
+  if leading_jet_mv2c10 >= 0.645925 and leading_jet_mv2c10 < 0.8244273:
+    return 3
+  if leading_jet_mv2c10 >= 0.8244273 and leading_jet_mv2c10 < 0.934906:
+    return 4
+  if leading_jet_mv2c10 >= 0.934906:
+    return 5
+
 ########################################################################
 
 def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOrData = "bkg"):
@@ -152,12 +170,12 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
     # stacked_nbins = 40
     # nbins_start = 0
     # nbins_end = 7
-    # stacked_nbins = 5
-    # nbins_start = -0.5
-    # nbins_end = 4.5
-    stacked_nbins = 20
-    nbins_start = 0
-    nbins_end = 1
+    stacked_nbins = 6
+    nbins_start = -0.5
+    nbins_end = 5.5
+    # stacked_nbins = 20
+    # nbins_start = 0
+    # nbins_end = 1
     if not os.path.exists("stacked_"+cutName+"_"+version):
         os.makedirs("stacked_"+cutName+"_"+version)
     h_ttgamma = ROOT.TH1D("h_ttgamma","h_ttgamma", stacked_nbins, nbins_start, nbins_end)
@@ -169,6 +187,7 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
     h_VV = ROOT.TH1D("h_VV","h_VV", stacked_nbins, nbins_start, nbins_end)
     h_ST = ROOT.TH1D("h_ST","h_ST", stacked_nbins, nbins_start, nbins_end)
     h_data_2015 = ROOT.TH1D("h_data_2015","h_data_2015", stacked_nbins, nbins_start, nbins_end)
+
 
     # Define the samples that contain prompt photons
     prompt = [
@@ -200,6 +219,12 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
     mphel = 0
     dR_gj = 0
     dR_gl = 0
+
+    mv2c10_85=0
+    mv2c10_77=0
+    mv2c10_70=0
+    mv2c10_60=0
+    mv2c10_le60=0
 
     entries = chain.GetEntries()
     print str(entries), " entries for ", str(chain.GetCurrentFile().GetName())
@@ -296,15 +321,40 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
       if cutName == "full_cuts":
         plotvar = i.ph_pt[i.selph_index1]/1e3
 
+
+      highest_jet_mv2c10 = get_mv2c10_bin(i.jet_mv2c10)
+      if highest_jet_mv2c10==0:
+        mv2c10_85=1*totalWeight + mv2c10_85
+      if highest_jet_mv2c10==1:
+        mv2c10_77=1*totalWeight+ mv2c10_77
+      if highest_jet_mv2c10==2:
+        mv2c10_70=1*totalWeight + mv2c10_70
+      if highest_jet_mv2c10==3:
+        mv2c10_60=1*totalWeight + mv2c10_60
+      if highest_jet_mv2c10==4:
+        mv2c10_le60=1*totalWeight + mv2c10_le60
+
+      working_points_labels=["85<Eff","85<Eff<77","77<Eff70","70<Eff<60","Eff<60"]
+      working_points=[mv2c10_85,mv2c10_77,mv2c10_70,mv2c10_60,mv2c10_le60]
+
       # Fill the cutflows and the  histos used for stacking
       if ttgamma_sample in filename_string:
-        h_ttgamma.Fill(plotvar, weightToUse)
+        # h_ttgamma.Fill(plotvar, weightToUse)
+        for wp in range(1, len(working_points)+1):
+          h_ttgamma.SetBinContent(wp,working_points[wp-1])
+          h_ttgamma.GetXaxis().SetBinLabel(wp,working_points_labels[wp-1])
+
+        h_ttgamma.SetBinContent(highest_jet_mv2c10,1)
         for m in range(1, len(cut_list)+1):
           h_ttgamma_cutflow.SetBinContent(m,cut_list[m-1])
           h_ttgamma_cutflow.GetXaxis().SetBinLabel(m,cut_list_names[m-1])
 
       if "ttbar_" in filename_string:
-        h_ttbar.Fill(plotvar, weightToUse)
+        # h_ttbar.Fill(plotvar, weightToUse)
+        for wp in range(1, len(working_points)+1):
+          h_ttbar.SetBinContent(wp,working_points[wp-1])
+          h_ttbar.GetXaxis().SetBinLabel(wp,working_points_labels[wp-1])
+
         for n in range(1, len(cut_list)+1):
           h_ttbar_cutflow.SetBinContent(n,cut_list[n-1])
           h_ttbar_cutflow.GetXaxis().SetBinLabel(n,cut_list_names[n-1])
@@ -316,7 +366,11 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
           h_other_ttbar.Fill(1,weightToUse)
 
       if any(wj in filename_string for wj in wjets):
-        h_Wjets.Fill(plotvar, weightToUse)
+        # h_Wjets.Fill(plotvar, weightToUse)
+        for wp in range(1, len(working_points)+1):
+          h_Wjets.SetBinContent(wp,working_points[wp-1])
+          h_Wjets.GetXaxis().SetBinLabel(wp,working_points_labels[wp-1])
+
         for p in range(1, len(cut_list)+1):
           h_Wjets_cutflow.SetBinContent(p,cut_list[p-1])
           h_Wjets_cutflow.GetXaxis().SetBinLabel(p,cut_list_names[p-1])
@@ -328,7 +382,11 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
           h_other_Wjets.Fill(1,weightToUse)
 
       if any(wg in filename_string for wg in wgamma):
-        h_Wgamma.Fill(plotvar, weightToUse)
+        # h_Wgamma.Fill(plotvar, weightToUse)
+        for wp in range(1, len(working_points)+1):
+          h_Wgamma.SetBinContent(wp,working_points[wp-1])
+          h_Wgamma.GetXaxis().SetBinLabel(wp,working_points_labels[wp-1])
+
         for q in range(1, len(cut_list)+1):
           h_Wgamma_cutflow.SetBinContent(q,cut_list[q-1])
           h_Wgamma_cutflow.GetXaxis().SetBinLabel(q,cut_list_names[q-1])
@@ -340,7 +398,11 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
           h_other_Wgamma.Fill(1,weightToUse)
 
       if any(zj in filename_string for zj in zjets):
-        h_Zjets.Fill(plotvar, weightToUse)
+        # h_Zjets.Fill(plotvar, weightToUse)
+        for wp in range(1, len(working_points)+1):
+          h_Zjets.SetBinContent(wp,working_points[wp-1])
+          h_Zjets.GetXaxis().SetBinLabel(wp,working_points_labels[wp-1])
+
         for r in range(1, len(cut_list)+1):
           h_Zjets_cutflow.SetBinContent(r,cut_list[r-1])
           h_Zjets_cutflow.GetXaxis().SetBinLabel(r,cut_list_names[r-1])
@@ -352,7 +414,11 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
           h_other_Zjets.Fill(1,weightToUse)
 
       if any(zg in filename_string for zg in zgamma):
-        h_Zgamma.Fill(plotvar, weightToUse)
+        # h_Zgamma.Fill(plotvar, weightToUse)
+        for wp in range(1, len(working_points)+1):
+          h_Zgamma.SetBinContent(wp,working_points[wp-1])
+          h_Zgamma.GetXaxis().SetBinLabel(wp,working_points_labels[wp-1])
+
         for s in range(1, len(cut_list)+1):
           h_Zgamma_cutflow.SetBinContent(s,cut_list[s-1])
           h_Zgamma_cutflow.GetXaxis().SetBinLabel(s,cut_list_names[s-1])
@@ -364,7 +430,11 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
           h_other_Zgamma.Fill(1,weightToUse)
 
       if "VV" in filename_string:
-        h_VV.Fill(plotvar, weightToUse)
+        # h_VV.Fill(plotvar, weightToUse)
+        for wp in range(1, len(working_points)+1):
+          h_VV.SetBinContent(wp,working_points[wp-1])
+          h_VV.GetXaxis().SetBinLabel(wp,working_points_labels[wp-1])
+
         for t in range(1, len(cut_list)+1):
           h_VV_cutflow.SetBinContent(t,cut_list[t-1])
           h_VV_cutflow.GetXaxis().SetBinLabel(t,cut_list_names[t-1])
@@ -376,7 +446,11 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
           h_other_VV.Fill(1,weightToUse)
 
       if "ST" in filename_string:
-        h_ST.Fill(plotvar, weightToUse)
+        # h_ST.Fill(plotvar, weightToUse)
+        for wp in range(1, len(working_points)+1):
+          h_ST.SetBinContent(wp,working_points[wp-1])
+          h_ST.GetXaxis().SetBinLabel(wp,working_points_labels[wp-1])
+
         for u in range(1, len(cut_list)+1):
           h_ST_cutflow.SetBinContent(u,cut_list[u-1])
           h_ST_cutflow.GetXaxis().SetBinLabel(u,cut_list_names[u-1])
@@ -388,7 +462,11 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
           h_other_ST.Fill(1,weightToUse)
 
       if dataWildCard in filename_string:
-        h_data_2015.Fill(plotvar, weightToUse)
+        # h_data_2015.Fill(plotvar, weightToUse)
+        for wp in range(1, len(working_points)+1):
+          h_data_2015.SetBinContent(wp,working_points[wp-1])
+          h_data_2015.GetXaxis().SetBinLabel(wp,working_points_labels[wp-1])
+
         for v in range(1, len(cut_list)+1):
           h_data_2015_cutflow.SetBinContent(v,cut_list[v-1])
           h_data_2015_cutflow.GetXaxis().SetBinLabel(v,cut_list_names[v-1])
@@ -750,5 +828,5 @@ from joblib import Parallel, delayed
 
 _ = Parallel(n_jobs=-1, verbose=5, backend="multiprocessing") \
 ( delayed(main)(cutName="full_cuts",region=i,cut_range=[1],allCuts = True) for i in regs) 
-#main(cutName="full_cuts",region="ejets",cut_range=[1], allCuts = True)
-#main(cutName="full_cuts",region="mujets",cut_range=[1], allCuts = True)
+# main(cutName="full_cuts",region="ejets",cut_range=[1], allCuts = True)
+# main(cutName="full_cuts",region="mujets",cut_range=[1], allCuts = True)

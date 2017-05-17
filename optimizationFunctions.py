@@ -247,7 +247,7 @@ class stackedHistogram:
     y_top = h_stack.GetYaxis()
     y_top.SetTitle("#events/GeV ")
 
-    leg = ROOT.TLegend(0.62,0.58,0.82,0.88);
+    leg = ROOT.TLegend(0.42,0.58,0.62,0.88);
     leg.SetTextSize(0.022);
     if (region == "mujets"):
       leg.SetHeader("#mu+jets, "+cutName+": "+str(cutValue));
@@ -276,8 +276,8 @@ class stackedHistogram:
     lumi.SetTextFont(63);
     lumi.SetTextSizePixels(15);
     lumifb = lumipb/1e3
-    lumi.DrawLatex(0.35,0.85, "#it{#scale[1.2]{ATLAS}} #bf{Internal}");
-    lumi.DrawLatex(0.35,0.80,"#sqrt{s}=13 TeV, " + str(round(lumifb,2)) +" fb^{-1}");
+    lumi.DrawLatex(0.15,0.85, "#it{#scale[1.2]{ATLAS}} #bf{Internal}");
+    lumi.DrawLatex(0.15,0.80,"#sqrt{s}=13 TeV, " + str(round(lumifb,2)) +" fb^{-1}");
 
     ratio = h_data_2015.Clone("ratio")
     ratio.SetMarkerStyle(20)
