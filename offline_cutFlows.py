@@ -38,7 +38,7 @@ def main(inputs,cutLabels, channel,region,year,version):
 	path = "./" 
 
 	print "---+++ ",region,channel,year," \n"
-	print "| Cuts | ttgamma | ttbar  | Wgamma | W+ jets | Zgamma | Z + jets | Single Top + gamma | Diboson+gamma | DATA (",year,") | Total (Sig+Bkg) | data/totalMC |"
+	print "| Cuts | ttgamma | ttbar  | Wgamma | W+ jets | Zgamma | Z + jets | Single Top + gamma | Diboson+gamma | QCD | DATA (",year,") | Total (Sig+Bkg) | data/totalMC |"
 
 	full_string = []
 	f = ROOT.TFile.Open(path+"stacked_full_cuts_"+version+"/"+channel+"_full_cuts_1_yields_and_cutflows.root");
@@ -68,11 +68,11 @@ def main(inputs,cutLabels, channel,region,year,version):
 		except ZeroDivisionError:
 			print "- | - |"
 
-inputs = ["ttgamma_cutflow", "ttbar_cutflow", "Wgamma_cutflow", "Wjets_cutflow", "Zgamma_cutflow", "Zjets_cutflow", "ST_cutflow", "VV_cutflow", "data_2015_cutflow"]
+inputs = ["ttgamma_cutflow", "ttbar_cutflow", "Wgamma_cutflow", "Wjets_cutflow", "Zgamma_cutflow", "Zjets_cutflow", "ST_cutflow", "VV_cutflow","qcd_cutflow", "data_2015_cutflow"]
 
 cut_list_names = ["total","ngoodphotons == 1","overlap_removal", "nbjets >=1","HFT_MVA", "abs(m(ph,e) - m(W))>5 GeV", "dR_gl > 0.7"]
 
 
-main(inputs = inputs, cutLabels = cut_list_names, channel = "ejets", region = "SR",year ="2015", version="v007");
+#main(inputs = inputs, cutLabels = cut_list_names, channel = "ejets", region = "SR",year ="2015", version="v007");
 main(inputs = inputs, cutLabels = cut_list_names, channel = "mujets", region = "SR",year ="2015", version="v007");
 

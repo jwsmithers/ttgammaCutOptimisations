@@ -34,7 +34,7 @@ import glob
 import sys
 import os
 from math import *
-ROOT.gROOT.ProcessLine( "gErrorIgnoreLevel = 1001;")
+# ROOT.gROOT.ProcessLine( "gErrorIgnoreLevel = 1001;")
 ROOT.gROOT.SetBatch(True)
 ROOT.gStyle.SetOptStat(0);
 ########################################################################
@@ -67,12 +67,17 @@ bkg_samples = [ "ttbar_",
     "VV",
     "ST_other",
     "ST_Wt_inclusive"]
+
+qcd_samples = ["QCDfakes_data15"]
+
 # Specify some groups of samples
 wjets = ["Wenu","Wmunu","Wtaunu"]
 wgamma = ["enugamma","munugamma","taunugamma"]
 zjets = ["Zee","Zmumu","Ztautau"]
 zgamma = ["eegamma","mumugamma","tautaugamma"]
 st = ["ST_other", "ST_Wt_inclusive"]
+vv = ["VV"]
+qcd = ["QCDfakes_data15"]
 
 # What version of our ntuples are we using?
 version = "v007"
@@ -81,7 +86,7 @@ if version == "v003":
 elif version == "v004": 
   dataWildCard = "data15" #V004
 elif version == "v007":
-  dataWildCard = "data15" #V006
+  dataWildCard = "data15period" #V006
 
 
 ########################################################################
@@ -114,6 +119,7 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
     h_Zgamma_cutflow = ROOT.TH1D("Zgamma_cutflow","Zgamma_cutflow", cutflowBins, cutflow_start, cutflow_end)
     h_VV_cutflow = ROOT.TH1D("VV_cutflow","VV_cutflow", cutflowBins, cutflow_start, cutflow_end)
     h_ST_cutflow = ROOT.TH1D("ST_cutflow","ST_cutflow", cutflowBins, cutflow_start, cutflow_end)
+    h_qcd_cutflow = ROOT.TH1D("qcd_cutflow","qcd_cutflow", cutflowBins, cutflow_start, cutflow_end)
     h_data_2015_cutflow = ROOT.TH1D("data_2015_cutflow","data_2015_cutflow", cutflowBins, cutflow_start, cutflow_end)
 
     # h_photon_SF_UP = ROOT.TH1D("photon_UP","photon_UP", 100, 0, 100)
@@ -168,6 +174,7 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
     h_Zgamma = ROOT.TH1D("h_Zgamma","h_Zgamma", stacked_nbins, nbins_start, nbins_end)
     h_VV = ROOT.TH1D("h_VV","h_VV", stacked_nbins, nbins_start, nbins_end)
     h_ST = ROOT.TH1D("h_ST","h_ST", stacked_nbins, nbins_start, nbins_end)
+    h_qcd = ROOT.TH1D("h_qcd","h_qcd", stacked_nbins, nbins_start, nbins_end)
     h_data_2015 = ROOT.TH1D("h_data_2015","h_data_2015", stacked_nbins, nbins_start, nbins_end)
 
     # Define the samples that contain prompt photons
@@ -213,6 +220,15 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
         totalWeight = 1
         weight_no_btag = 1
         weightToUse = 1
+      elif "QCDfakes_data15" in filename_string:
+        if region == "ejets":
+          totalWeight = i.weight_mm_ejets
+          weight_no_btag = i.weight_mm_ejets
+          weightToUse = i.weight_mm_ejets
+        if region == "mujets":
+          totalWeight = i.weight_mm_mujets
+          weight_no_btag = i.weight_mm_mujets
+          weightToUse = i.weight_mm_mujets
       else:
         # The lumi variable is used here. One could also use i.event_lumi
         totalWeight = i.weight_mc * i.weight_pileup \
@@ -243,10 +259,10 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
       # Some easier ways to keep track:
       if region == "ejets":
         ph_mgammalept_cutValue = 5000
-        ph_drlept_cutValue = 0.7
+        ph_drlept_cutValue = 1.0
       if region == "mujets":
         met_cutValue = 0
-        ph_drlept_cutValue = 0.7
+        ph_drlept_cutValue = 1.0
 
       #ph_HFT_MVA_cutValue= cutValue  
       ph_HFT_MVA_cutValue = 0
@@ -387,14 +403,23 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
         else:
           h_other_ST.Fill(1,weightToUse)
 
+      if "QCDfakes_data15" in filename_string:
+        h_qcd.Fill(plotvar, weightToUse)
+        for x in range(1, len(cut_list)+1):
+          h_qcd_cutflow.SetBinContent(x,cut_list[x-1])
+          h_qcd_cutflow.GetXaxis().SetBinLabel(x,cut_list_names[x-1])
+
       if dataWildCard in filename_string:
         h_data_2015.Fill(plotvar, weightToUse)
         for v in range(1, len(cut_list)+1):
           h_data_2015_cutflow.SetBinContent(v,cut_list[v-1])
           h_data_2015_cutflow.GetXaxis().SetBinLabel(v,cut_list_names[v-1])
 
+
     ########### Potential to optimize #########
     nominal = h.Integral()
+    qcd_bkg = h_qcd.Integral()
+
 
     # We can also get each individual contribution
     hfakes_ttbar = h_hfake_ttbar.Integral()
@@ -479,13 +504,18 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
         h_ST.Write()
         h_ST_cutflow.Write()
 
+    if sigOrBkgOrData == "qcd":
+      h_qcd.Write()
+      h_qcd_cutflow.Write()
+
     if sigOrBkgOrData == "data":
       h_data_2015.Write()
       h_data_2015_cutflow.Write()
+
     f_root.Close()
 
     # Return the nominal signal count, and dictiionaries of the backgrounds
-    return nominal, hfakes, efakes, other
+    return nominal, hfakes, efakes, other, qcd_bkg
 ########################################################################
 
 def main(cutName,region,cut_range, allCuts=False):
@@ -495,6 +525,7 @@ def main(cutName,region,cut_range, allCuts=False):
     path = "/eos/atlas/user/j/jwsmith/reprocessedNtuples/v004/ntuples/SR_"+region+"_filled/"
   elif version == "v007":
     path = "/eos/atlas/user/c/caudron/TtGamma_ntuples/v007/SR1/"+region+"/"
+    QCD_path = "/eos/atlas/user/j/jwsmith/reprocessedNtuples/v007/QE2/"+region+"/"
 
   if not os.path.exists(path):
       print "Uhh have you got your paths correct?"
@@ -520,12 +551,20 @@ def main(cutName,region,cut_range, allCuts=False):
   for c in range(0,len(cut_range)):
     signalChain = ROOT.TChain("nominal")
     dataChain = ROOT.TChain("nominal")
+    qcdChain = ROOT.TChain("nominal_Loose")
+
+    ntuples_qcd = glob.glob(QCD_path+"*")
+    for j in ntuples_qcd:
+      if "QCDfakes_data15" in j:
+        print "adding QCD ",j
+        qcdChain.Add(j)
     
     for bchain in range(0,len(bkg_chains)):
       bkg_dict[bkg_chains[bchain]] = ROOT.TChain("nominal") 
+    
+    ntuples_normal_path = glob.glob(path+"*")
 
-    ntuples = glob.glob(path+"*")
-    for i in ntuples:
+    for i in ntuples_normal_path:
       if ttgamma_sample in i:
         signalChain.Add(i)
       elif dataWildCard in i:
@@ -545,6 +584,9 @@ def main(cutName,region,cut_range, allCuts=False):
               bkg_dict["ST"].Add(i)
             else:
               bkg_dict[s_bkg].Add(i)
+
+
+
 
     print "\n+++++++++++++++++++++++++++++++++++++++"
     # Need to "optimise" to get cutflow for data. Don't actually use it for anything
@@ -580,6 +622,11 @@ def main(cutName,region,cut_range, allCuts=False):
     other_bkg_VV = 0
     other_bkg_ST = 0
 
+    optimization_qcd = doOptimization(qcdChain, cut_range[c], region,cutName, allCuts,sigOrBkgOrData = "qcd")
+    qcd_bkg = float(optimization_qcd[4])
+    print "QCD = ", qcd_bkg
+
+
     for bkg in bkg_dict:
       optimization_bkg = doOptimization(bkg_dict[bkg], cut_range[c], region,cutName, allCuts,sigOrBkgOrData = "bkg")
       N_background = N_background + float(optimization_bkg[0])
@@ -607,11 +654,7 @@ def main(cutName,region,cut_range, allCuts=False):
       other_bkg_VV = other_bkg_VV + float(optimization_bkg[3]["VV"])
       other_bkg_ST = other_bkg_ST + float(optimization_bkg[3]["ST"])
 
-
-    # cutflowLine = region+", "+cutName+": "+str(cut_range[c]) +"\t"+str(N_signal)+ \
-    #   "\t"+str(hfake_bkg)+"\t"+str(efake_bkg)+"\t"+str(other_bkg)+"\n"
-    # with open("Cutflows.txt", "a") as myfile:
-    #   myfile.write(cutflowLine)
+    N_background = N_background+qcd_bkg
 
     print "Slice : ",cut_range[c]
     print "Total signal events = ", N_signal 
@@ -661,6 +704,8 @@ def main(cutName,region,cut_range, allCuts=False):
     "Zgamma":other_bkg_Zgamma*0.50,
     "ST":other_bkg_ST*0.50,
     "VV":other_bkg_VV*0.50}
+
+    # bkg_sys_qcd = {"qcd":qcd_total * 0.50} # Haven't passed this to optimizat function yet
 
     # We can also add other types of uncertainties
     if region == "ejets":
@@ -730,7 +775,7 @@ from joblib import Parallel, delayed
 #( delayed(main)(cutName="ph_HFT_MVA",region=i,cut_range=cutsPhHFTMVA) for i in regs) 
 
 # Or we can run them sequentially:
-# main(cutName="ph_HFT_MVA",region="ejets",cut_range=cutsPhHFTMVA)
+# main(cutName="ph_HFT_MVA",region="ejets",cut_range=[0,1])
 # main(cutName="ph_HFT_MVA",region="mujets",cut_range=cutsPhHFTMVA)
 
 # main(cutName="met_met",region="ejets",cut_range=[20,25,30,35,40,45,50,55,60,65,70])
@@ -748,7 +793,7 @@ from joblib import Parallel, delayed
 # The cut_range is completely irrelavent here.
 # Make sure youv'e set all your cuts correctly!
 
-_ = Parallel(n_jobs=-1, verbose=5, backend="multiprocessing") \
-( delayed(main)(cutName="full_cuts",region=i,cut_range=[1],allCuts = True) for i in regs) 
-#main(cutName="full_cuts",region="ejets",cut_range=[1], allCuts = True)
-#main(cutName="full_cuts",region="mujets",cut_range=[1], allCuts = True)
+# _ = Parallel(n_jobs=-1, verbose=5, backend="multiprocessing") \
+# ( delayed(main)(cutName="full_cuts",region=i,cut_range=[1],allCuts = True) for i in regs) 
+main(cutName="full_cuts",region="ejets",cut_range=[1], allCuts = True)
+# main(cutName="full_cuts",region="mujets",cut_range=[1], allCuts = True)

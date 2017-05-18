@@ -197,6 +197,9 @@ class stackedHistogram:
     h_VV.SetFillColor(95)
     h_ST = f.Get("h_ST")
     h_ST.SetFillColor(8)
+    h_qcd = f.Get("h_qcd")
+    h_qcd.SetFillColor(422)
+    h_stack.Add(h_qcd)
     h_stack.Add(h_ST)
     h_stack.Add(h_VV)
     h_stack.Add(h_Zgamma)
@@ -218,6 +221,7 @@ class stackedHistogram:
     h_all_bkg.Add(h_Zgamma)
     h_all_bkg.Add(h_ST)
     h_all_bkg.Add(h_VV)
+    h_all_bkg.Add(h_qcd)
 
     h_ttgamma_cutflow = ROOT.TH1D("ttgamma_cutflow","ttgamma_cutflow", 10, -0.5, 9.5)
 
@@ -266,6 +270,8 @@ class stackedHistogram:
     leg.AddEntry(h_Zjets,"Z+jets","f");
     leg.AddEntry(h_VV,"VV","f");
     leg.AddEntry(h_ST,"ST","f");
+    leg.AddEntry(h_qcd,"QCD","f");
+
 
     leg.SetBorderSize(0)
     leg.Draw()
