@@ -192,6 +192,7 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
     # Initiate counters
     total = 0
     ngoodPhDefs = 0
+    isolatedPh = 0
     overlap_removal = 0
     nbjets = 0
     HFT_MVA=0
@@ -226,7 +227,10 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
       # 1 good photon
       if i.event_ngoodphotons != 1:continue
       ngoodPhDefs = ngoodPhDefs + 1 * weight_no_btag
-  
+
+      if ord(i.ph_isoFCT[i.selph_index1]) != 1:continue
+      isolatedPh = isolatedPh + 1 * weight_no_btag
+
       #overlap removal
       if any(x1 in filename_string for x1 in prompt):
         if (i.event_photonorigin >= 10): continue
@@ -243,10 +247,10 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
       # Some easier ways to keep track:
       if region == "ejets":
         ph_mgammalept_cutValue = 5000
-        ph_drlept_cutValue = 0.7
+        ph_drlept_cutValue = 1.0
       if region == "mujets":
         met_cutValue = 0
-        ph_drlept_cutValue = 0.7
+        ph_drlept_cutValue = 1.0
 
       #ph_HFT_MVA_cutValue= cutValue  
       ph_HFT_MVA_cutValue = 0
@@ -271,8 +275,8 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
        # h_photon_SF_UP.Fill(1,weightToUse*Photon_UP)
        # h_photon_SF_DOWN.Fill(1,weightToUse*Photon_DOWN)
 
-      cut_list = [total, ngoodPhDefs,overlap_removal, nbjets,HFT_MVA, mphel, dR_gl]
-      cut_list_names = ["total","ngoodPhDefs", "overlap_removal", "nbjets","HFT_MVA", "mphel", "dR_gl"]
+      cut_list = [total, ngoodPhDefs,isolatedPh,overlap_removal, nbjets,HFT_MVA, mphel, dR_gl]
+      cut_list_names = ["total","ngoodPhDefs","isolatedPh","overlap_removal", "nbjets","HFT_MVA", "mphel", "dR_gl"]
 
        # Purely for creating stacked histos when optimizing.
       if cutName == "ph_pt":

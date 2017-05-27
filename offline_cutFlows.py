@@ -70,7 +70,7 @@ def main(inputs,cutLabels, channel,region,year,version):
 
 inputs = ["ttgamma_cutflow", "ttbar_cutflow", "Wgamma_cutflow", "Wjets_cutflow", "Zgamma_cutflow", "Zjets_cutflow", "ST_cutflow", "VV_cutflow", "data_2015_cutflow"]
 
-cut_list_names = ["total","ngoodphotons == 1","overlap_removal", "nbjets >=1","HFT_MVA", "abs(m(ph,e) - m(W))>5 GeV", "dR_gl > 0.7"]
+cut_list_names = ["total","ngoodphotons == 1","FixedTightCut","overlap_removal", "nbjets >=1","HFT_MVA", "abs(m(ph,e) - m(W))>5 GeV", "dR_gl > 0.7"]
 
 
 main(inputs = inputs, cutLabels = cut_list_names, channel = "ejets", region = "SR",year ="2015", version="v007");
