@@ -76,6 +76,7 @@ st = ["ST_other", "ST_Wt_inclusive"]
 
 # What version of our ntuples are we using?
 version = "v007"
+
 if version == "v003":
   dataWildCard = "data_2015" #V003
 elif version == "v004": 
@@ -99,9 +100,14 @@ def ph_HFT_MVA_cut(ph_HFT_MVA, ph_HFT_MVA_cutValue):
     return True
 ########################################################################
 
-def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOrData = "bkg"):
+def doOptimization(chain, cut_range, region, cutName, allCuts = False, sigOrBkgOrData = "bkg"):
+
+    hist_bin = len(cut_range)
+    hist_ini = cut_range[0]
+    diff = cut_range[1]-cut_range[0]
+    hist_fin = cut_range[-1] + diff
   # These histograms store the offline cutflows for each sample
-    h = ROOT.TH1D("temp","temp dist", 100, 0, 100)
+    h = ROOT.TH1D("temp","temp dist", hist_bin, hist_ini, hist_fin)
     # Histogramms for cutflows
     cutflowBins = 11
     cutflow_start = -0.5
@@ -120,29 +126,29 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
     # h_photon_SF_DOWN = ROOT.TH1D("photon_DOWN","photon_DOWN", 100, 0, 100)
 
     # Histograms for stacked plots
-    h_hfake_ttbar = ROOT.TH1D("hfake_ttbar","hfake_ttbar", 100, 0, 100)
-    h_hfake_ST = ROOT.TH1D("hfake_ST","hfake_ST", 100, 0, 100)
-    h_hfake_VV = ROOT.TH1D("hfake_VV","hfake_VV", 100, 0, 100)
-    h_hfake_Zjets = ROOT.TH1D("hfake_Zjets","hfake_Zjets", 100, 0, 100)
-    h_hfake_Zgamma = ROOT.TH1D("hfake_Zgamma","hfake_Zgamma", 100, 0, 100)
-    h_hfake_Wjets = ROOT.TH1D("hfake_Wjets","hfake_Wjets", 100, 0, 100)
-    h_hfake_Wgamma = ROOT.TH1D("hfake_Wgamma","hfake_Wgamma", 100, 0, 100)
+    h_hfake_ttbar = ROOT.TH1D("hfake_ttbar","hfake_ttbar", hist_bin, hist_ini, hist_fin)
+    h_hfake_ST = ROOT.TH1D("hfake_ST","hfake_ST", hist_bin, hist_ini, hist_fin)
+    h_hfake_VV = ROOT.TH1D("hfake_VV","hfake_VV", hist_bin, hist_ini, hist_fin)
+    h_hfake_Zjets = ROOT.TH1D("hfake_Zjets","hfake_Zjets", hist_bin, hist_ini, hist_fin)
+    h_hfake_Zgamma = ROOT.TH1D("hfake_Zgamma","hfake_Zgamma", hist_bin, hist_ini, hist_fin)
+    h_hfake_Wjets = ROOT.TH1D("hfake_Wjets","hfake_Wjets", hist_bin, hist_ini, hist_fin)
+    h_hfake_Wgamma = ROOT.TH1D("hfake_Wgamma","hfake_Wgamma", hist_bin, hist_ini, hist_fin)
 
-    h_efake_ttbar = ROOT.TH1D("efake_ttbar","efake_ttbar", 100, 0, 100)
-    h_efake_ST = ROOT.TH1D("efake_ST","efake_ST", 100, 0, 100)
-    h_efake_VV = ROOT.TH1D("efake_VV","efake_VV", 100, 0, 100)
-    h_efake_Zjets = ROOT.TH1D("efake_Zjets","efake_Zjets", 100, 0, 100)
-    h_efake_Zgamma = ROOT.TH1D("efake_Zgamma","efake_Zgamma", 100, 0, 100)
-    h_efake_Wjets = ROOT.TH1D("efake_Wjets","efake_Wjets", 100, 0, 100)
-    h_efake_Wgamma = ROOT.TH1D("efake_Wgamma","efake_Wgamma", 100, 0, 100)
+    h_efake_ttbar = ROOT.TH1D("efake_ttbar","efake_ttbar", hist_bin, hist_ini, hist_fin)
+    h_efake_ST = ROOT.TH1D("efake_ST","efake_ST", hist_bin, hist_ini, hist_fin)
+    h_efake_VV = ROOT.TH1D("efake_VV","efake_VV", hist_bin, hist_ini, hist_fin)
+    h_efake_Zjets = ROOT.TH1D("efake_Zjets","efake_Zjets", hist_bin, hist_ini, hist_fin)
+    h_efake_Zgamma = ROOT.TH1D("efake_Zgamma","efake_Zgamma", hist_bin, hist_ini, hist_fin)
+    h_efake_Wjets = ROOT.TH1D("efake_Wjets","efake_Wjets", hist_bin, hist_ini, hist_fin)
+    h_efake_Wgamma = ROOT.TH1D("efake_Wgamma","efake_Wgamma", hist_bin, hist_ini, hist_fin)
 
-    h_other_ttbar = ROOT.TH1D("other_ttbar","other_ttbar", 100, 0, 100)
-    h_other_ST = ROOT.TH1D("other_ST","other_ST", 100, 0, 100)
-    h_other_VV = ROOT.TH1D("other_VV","other_VV", 100, 0, 100)
-    h_other_Zjets = ROOT.TH1D("other_Zjets","other_Zjets", 100, 0, 100)
-    h_other_Zgamma = ROOT.TH1D("other_Zgamma","other_Zgamma", 100, 0, 100)
-    h_other_Wjets = ROOT.TH1D("other_Wjets","other_Wjets", 100, 0, 100)
-    h_other_Wgamma = ROOT.TH1D("other_Wgamma","other_Wgamma", 100, 0, 100)
+    h_other_ttbar = ROOT.TH1D("other_ttbar","other_ttbar", hist_bin, hist_ini, hist_fin)
+    h_other_ST = ROOT.TH1D("other_ST","other_ST", hist_bin, hist_ini, hist_fin)
+    h_other_VV = ROOT.TH1D("other_VV","other_VV", hist_bin, hist_ini, hist_fin)
+    h_other_Zjets = ROOT.TH1D("other_Zjets","other_Zjets", hist_bin, hist_ini, hist_fin)
+    h_other_Zgamma = ROOT.TH1D("other_Zgamma","other_Zgamma", hist_bin, hist_ini, hist_fin)
+    h_other_Wjets = ROOT.TH1D("other_Wjets","other_Wjets", hist_bin, hist_ini, hist_fin)
+    h_other_Wgamma = ROOT.TH1D("other_Wgamma","other_Wgamma", hist_bin, hist_ini, hist_fin)
 
     # These bins and histograms store the event count that will be used to create stacked histos
     # Unfortunately, the bins need to be adjusted depending on the veriable to optimize.
@@ -258,19 +264,20 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
       # Cuts  
       if i.event_nbjets77 < 1: continue #1 or more bjets
       nbjets = nbjets +1 * totalWeight
+
       ph_HFT_MVA_bool = ph_HFT_MVA_cut(i.ph_HFT_MVA[i.selph_index1],ph_HFT_MVA_cutValue)
       if ph_HFT_MVA_bool != True: continue 
       HFT_MVA = HFT_MVA + 1 * totalWeight
+
       if (region == "ejets"):
         ph_mgammleptZWindow_bool = ph_mgammleptZWindow(i.ph_mgammalept[i.selph_index1],ph_mgammalept_cutValue)
         if ph_mgammleptZWindow_bool != True:continue # A ph,lep mass - Zmass window cut
         mphel = mphel + 1 * totalWeight
+
       ph_drlept_bool = ph_drLepGamma(i.ph_drlept[i.selph_index1],ph_drlept_cutValue)
       if ph_drlept_bool != True: continue # dr_gammalept cut
       dR_gl = dR_gl +1 * totalWeight
       #####################################################################
-      # We only fill at the end of the loop. This could be optimized
-      h.Fill(1,weightToUse)
 
        # h_photon_SF_UP.Fill(1,weightToUse*Photon_UP)
        # h_photon_SF_DOWN.Fill(1,weightToUse*Photon_DOWN)
@@ -300,6 +307,9 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
       if cutName == "full_cuts":
         plotvar = i.ph_pt[i.selph_index1]/1e3
 
+      # We only fill at the end of the loop. This could be optimized
+      h.Fill(plotvar,weightToUse)#
+
       # Fill the cutflows and the  histos used for stacking
       if ttgamma_sample in filename_string:
         h_ttgamma.Fill(plotvar, weightToUse)
@@ -313,11 +323,11 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
           h_ttbar_cutflow.SetBinContent(n,cut_list[n-1])
           h_ttbar_cutflow.GetXaxis().SetBinLabel(n,cut_list_names[n-1])
         if i.event_photonorigin==10:
-          h_hfake_ttbar.Fill(1,weightToUse)
+          h_hfake_ttbar.Fill(plotvar,weightToUse)#
         elif i.event_photonorigin==20:
-          h_efake_ttbar.Fill(1,weightToUse)
+          h_efake_ttbar.Fill(plotvar,weightToUse)#
         else:
-          h_other_ttbar.Fill(1,weightToUse)
+          h_other_ttbar.Fill(plotvar,weightToUse)#
 
       if any(wj in filename_string for wj in wjets):
         h_Wjets.Fill(plotvar, weightToUse)
@@ -325,11 +335,11 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
           h_Wjets_cutflow.SetBinContent(p,cut_list[p-1])
           h_Wjets_cutflow.GetXaxis().SetBinLabel(p,cut_list_names[p-1])
         if i.event_photonorigin==10:
-          h_hfake_Wjets.Fill(1,weightToUse)
+          h_hfake_Wjets.Fill(plotvar,weightToUse)#
         elif i.event_photonorigin==20:
-          h_efake_Wjets.Fill(1,weightToUse)
+          h_efake_Wjets.Fill(plotvar,weightToUse)#
         else:
-          h_other_Wjets.Fill(1,weightToUse)
+          h_other_Wjets.Fill(plotvar,weightToUse)#
 
       if any(wg in filename_string for wg in wgamma):
         h_Wgamma.Fill(plotvar, weightToUse)
@@ -337,11 +347,11 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
           h_Wgamma_cutflow.SetBinContent(q,cut_list[q-1])
           h_Wgamma_cutflow.GetXaxis().SetBinLabel(q,cut_list_names[q-1])
         if i.event_photonorigin==10:
-          h_hfake_Wgamma.Fill(1,weightToUse)
+          h_hfake_Wgamma.Fill(plotvar,weightToUse)#
         elif i.event_photonorigin==20:
-          h_efake_Wgamma.Fill(1,weightToUse)
+          h_efake_Wgamma.Fill(plotvar,weightToUse)#
         else:
-          h_other_Wgamma.Fill(1,weightToUse)
+          h_other_Wgamma.Fill(plotvar,weightToUse)#
 
       if any(zj in filename_string for zj in zjets):
         h_Zjets.Fill(plotvar, weightToUse)
@@ -349,11 +359,11 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
           h_Zjets_cutflow.SetBinContent(r,cut_list[r-1])
           h_Zjets_cutflow.GetXaxis().SetBinLabel(r,cut_list_names[r-1])
         if i.event_photonorigin==10:
-          h_hfake_Zjets.Fill(1,weightToUse)
+          h_hfake_Zjets.Fill(plotvar,weightToUse)#
         elif i.event_photonorigin==20:
-          h_efake_Zjets.Fill(1,weightToUse)
+          h_efake_Zjets.Fill(plotvar,weightToUse)#
         else:
-          h_other_Zjets.Fill(1,weightToUse)
+          h_other_Zjets.Fill(plotvar,weightToUse)#
 
       if any(zg in filename_string for zg in zgamma):
         h_Zgamma.Fill(plotvar, weightToUse)
@@ -361,11 +371,11 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
           h_Zgamma_cutflow.SetBinContent(s,cut_list[s-1])
           h_Zgamma_cutflow.GetXaxis().SetBinLabel(s,cut_list_names[s-1])
         if i.event_photonorigin==10:
-          h_hfake_Zgamma.Fill(1,weightToUse)
+          h_hfake_Zgamma.Fill(plotvar,weightToUse)#
         elif i.event_photonorigin==20:
-          h_efake_Zgamma.Fill(1,weightToUse)
+          h_efake_Zgamma.Fill(plotvar,weightToUse)#
         else:
-          h_other_Zgamma.Fill(1,weightToUse)
+          h_other_Zgamma.Fill(plotvar,weightToUse)#
 
       if "VV" in filename_string:
         h_VV.Fill(plotvar, weightToUse)
@@ -373,11 +383,11 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
           h_VV_cutflow.SetBinContent(t,cut_list[t-1])
           h_VV_cutflow.GetXaxis().SetBinLabel(t,cut_list_names[t-1])
         if i.event_photonorigin==10:
-          h_hfake_VV.Fill(1,weightToUse)
+          h_hfake_VV.Fill(plotvar,weightToUse)#
         elif i.event_photonorigin==20:
-          h_efake_VV.Fill(1,weightToUse)
+          h_efake_VV.Fill(plotvar,weightToUse)#
         else:
-          h_other_VV.Fill(1,weightToUse)
+          h_other_VV.Fill(plotvar,weightToUse)#
 
       if "ST" in filename_string:
         h_ST.Fill(plotvar, weightToUse)
@@ -385,11 +395,11 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
           h_ST_cutflow.SetBinContent(u,cut_list[u-1])
           h_ST_cutflow.GetXaxis().SetBinLabel(u,cut_list_names[u-1])
         if i.event_photonorigin==10:
-          h_hfake_ST.Fill(1,weightToUse)
+          h_hfake_ST.Fill(plotvar,weightToUse)#
         elif i.event_photonorigin==20:
-          h_efake_ST.Fill(1,weightToUse)
+          h_efake_ST.Fill(plotvar,weightToUse)#
         else:
-          h_other_ST.Fill(1,weightToUse)
+          h_other_ST.Fill(plotvar,weightToUse)#
 
       if dataWildCard in filename_string:
         h_data_2015.Fill(plotvar, weightToUse)
@@ -398,8 +408,10 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
           h_data_2015_cutflow.GetXaxis().SetBinLabel(v,cut_list_names[v-1])
 
     ########### Potential to optimize #########
-    nominal = h.Integral()
-
+    nominal = h
+    #test = h.Integral(0,len(cut_range))
+    #print test
+    '''
     # We can also get each individual contribution
     hfakes_ttbar = h_hfake_ttbar.Integral()
     hfakes_Wjets = h_hfake_Wjets.Integral()
@@ -423,17 +435,17 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
     other_Zjets = h_other_Zjets.Integral()
     other_Zgamma = h_other_Zgamma.Integral()
     other_ST = h_other_ST.Integral()
-    other_VV = h_other_VV.Integral()
+    other_VV = h_other_VV.Integral()'''
 
     # Create some dictionaries for later use
-    hfakes = {"ttbar":hfakes_ttbar,"Wjets":hfakes_Wjets,"Wgamma":hfakes_Wgamma,
-             "Zjets":hfakes_Zjets,"Zgamma":hfakes_Zgamma,"ST":hfakes_ST,"VV":hfakes_VV}
+    hfakes = {"ttbar":h_hfake_ttbar,"Wjets":h_hfake_Wjets,"Wgamma":h_hfake_Wgamma,
+             "Zjets":h_hfake_Zjets,"Zgamma":h_hfake_Zgamma,"ST":h_hfake_ST,"VV":h_hfake_VV}
 
-    efakes = {"ttbar":efakes_ttbar,"Wjets":efakes_Wjets,"Wgamma":efakes_Wgamma,
-             "Zjets":efakes_Zjets,"Zgamma":efakes_Zgamma,"ST":efakes_ST,"VV":efakes_VV}
+    efakes = {"ttbar":h_efake_ttbar,"Wjets":h_efake_Wjets,"Wgamma":h_efake_Wgamma,
+             "Zjets":h_efake_Zjets,"Zgamma":h_efake_Zgamma,"ST":h_efake_ST,"VV":h_efake_VV}
 
-    other = {"ttbar":other_ttbar,"Wjets":other_Wjets,"Wgamma":other_Wgamma,
-             "Zjets":other_Zjets,"Zgamma":other_Zgamma,"ST":other_ST,"VV":other_VV}
+    other = {"ttbar":h_other_ttbar,"Wjets":h_other_Wjets,"Wgamma":h_other_Wgamma,
+             "Zjets":h_other_Zjets,"Zgamma":h_other_Zgamma,"ST":h_other_ST,"VV":h_other_VV}
 
     # otherbkgs = h_otherbkg.Integral()
 
@@ -441,6 +453,7 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
     # photon_down = h_photon_SF_DOWN.Integral()
     # ph_ID_systematic = OF.systematics().upDownCalc(up=photon_up,
     #   down=photon_down,nominal=nominal) 
+    '''
     while True:
       try:
         f_root = ROOT.TFile.Open("stacked_"+cutName+"_"+version+'/'+region+"_"+cutName+'_'+str(cutValue)+'_yields_and_cutflows.root','UPDATE')
@@ -487,7 +500,7 @@ def doOptimization(chain, cutValue, region, cutName, allCuts = False, sigOrBkgOr
       h_data_2015.Write()
       h_data_2015_cutflow.Write()
     f_root.Close()
-
+    '''
     # Return the nominal signal count, and dictiionaries of the backgrounds
     return nominal, hfakes, efakes, other
 ########################################################################
@@ -500,36 +513,33 @@ def main(cutName,region,cut_range, allCuts=False):
   elif version == "v007":
     path = "/eos/atlas/user/c/caudron/TtGamma_ntuples/v007/SR1/"+region+"/"
 
+  print path
   if not os.path.exists(path):
       print "Uhh have you got your paths correct?"
       return
+  hist_bin = len(cut_range)
+  hist_ini = cut_range[0]
+  diff = cut_range[1]-cut_range[0]
+  hist_fin = cut_range[-1] + diff
 
-  cutOpt_stat = ROOT.TH1F("cutOpt_stat_"+region, 'cutOpt_stat_'+region, 
-    len(cut_range)-1, cut_range[0], cut_range[-1])
-  cutOpt_sys = ROOT.TH1F("cutOpt_sys_"+region, 'cutOpt_sys_'+region, 
-    len(cut_range)-1, cut_range[0], cut_range[-1])
-  cutOpt_tot = ROOT.TH1F("cutOpt_tot_"+region, 'cutOpt_tot_'+region, 
-    len(cut_range)-1, cut_range[0], cut_range[-1])
+  cutOpt_stat = ROOT.TH1F("cutOpt_stat_"+region, 'cutOpt_stat_'+region, hist_bin, hist_ini, hist_fin)
+  cutOpt_sys = ROOT.TH1F("cutOpt_sys_"+region, 'cutOpt_sys_'+region, hist_bin, hist_ini, hist_fin)
+  cutOpt_tot = ROOT.TH1F("cutOpt_tot_"+region, 'cutOpt_tot_'+region, hist_bin, hist_ini, hist_fin)
 
   #Define bkg chains and dict
   bkg_dict={}
-  bkg_chains = [ "ttbar_",
-    "Wjets",
-    "Wgamma",
-    "Zjets",
-    "Zgamma",
-    "VV",
-    "ST"]
+  bkg_chains = [ "ttbar_","Wjets","Wgamma","Zjets","Zgamma","VV","ST" ]
+ 
+  optimization_bkg = { "ttbar_":0,"Wjets":0,"Wgamma":0,"Zjets":0,"Zgamma":0,"VV":0,"ST":0 }
 
-  for c in range(0,len(cut_range)):
-    signalChain = ROOT.TChain("nominal")
-    dataChain = ROOT.TChain("nominal")
+  signalChain = ROOT.TChain("nominal")
+  dataChain = ROOT.TChain("nominal")
     
-    for bchain in range(0,len(bkg_chains)):
+  for bchain in range(0,len(bkg_chains)):
       bkg_dict[bkg_chains[bchain]] = ROOT.TChain("nominal") 
 
-    ntuples = glob.glob(path+"*")
-    for i in ntuples:
+  ntuples = glob.glob(path+"*")
+  for i in ntuples:
       if ttgamma_sample in i:
         signalChain.Add(i)
       elif dataWildCard in i:
@@ -550,13 +560,20 @@ def main(cutName,region,cut_range, allCuts=False):
             else:
               bkg_dict[s_bkg].Add(i)
 
-    print "\n+++++++++++++++++++++++++++++++++++++++"
+  print "\n+++++++++++++++++++++++++++++++++++++++"
     # Need to "optimise" to get cutflow for data. Don't actually use it for anything
     # If switching to 36 fb-1 and CR1, REMEMBER TO COMMENT THIS OUT!
-    optimization_data = doOptimization(dataChain, cut_range[c], region,cutName, allCuts, sigOrBkgOrData = "data")
+    #optimization_data = doOptimization(dataChain, cut_range, region,cutName, allCuts, sigOrBkgOrData = "data",hist_bin,hist_ini,hist_fin)
 
-    optimization_signal = doOptimization(signalChain, cut_range[c], region,cutName, allCuts,sigOrBkgOrData = "sig")
-    N_signal = float(optimization_signal[0])
+  optimization_signal = doOptimization(signalChain, cut_range, region,cutName, allCuts,sigOrBkgOrData = "sig")
+
+  for bkg in bkg_dict:
+      optimization_bkg[bkg] = doOptimization(bkg_dict[bkg], cut_range, region,cutName, allCuts,sigOrBkgOrData = "bkg")
+
+
+  for c in range(0,len(cut_range)):
+    h_sig = (optimization_signal[0]).Integral(c+1,len(cut_range)+2)
+    N_signal = float(h_sig)
 
     # Some counters
     N_background = 0
@@ -585,31 +602,30 @@ def main(cutName,region,cut_range, allCuts=False):
     other_bkg_ST = 0
 
     for bkg in bkg_dict:
-      optimization_bkg = doOptimization(bkg_dict[bkg], cut_range[c], region,cutName, allCuts,sigOrBkgOrData = "bkg")
-      N_background = N_background + float(optimization_bkg[0])
-      hfake_bkg_ttbar = hfake_bkg_ttbar + float(optimization_bkg[1]["ttbar"])
-      hfake_bkg_Wjets = hfake_bkg_Wjets + float(optimization_bkg[1]["Wjets"])
-      hfake_bkg_Wgamma = hfake_bkg_Wgamma + float(optimization_bkg[1]["Wgamma"])
-      hfake_bkg_Zjets = hfake_bkg_Zjets + float(optimization_bkg[1]["Zjets"])
-      hfake_bkg_Zgamma = hfake_bkg_Zgamma + float(optimization_bkg[1]["Zgamma"])
-      hfake_bkg_VV = hfake_bkg_VV + float(optimization_bkg[1]["VV"])
-      hfake_bkg_ST = hfake_bkg_ST + float(optimization_bkg[1]["ST"])
+      N_background = N_background + float((optimization_bkg[bkg][0]).Integral(c+1,len(cut_range)+2))
+      hfake_bkg_ttbar = hfake_bkg_ttbar + float((optimization_bkg[bkg][1]["ttbar"]).Integral(c+1,len(cut_range)+2))
+      hfake_bkg_Wjets = hfake_bkg_Wjets + float((optimization_bkg[bkg][1]["Wjets"]).Integral(c+1,len(cut_range)+2))
+      hfake_bkg_Wgamma = hfake_bkg_Wgamma + float((optimization_bkg[bkg][1]["Wgamma"]).Integral(c+1,len(cut_range)+2))
+      hfake_bkg_Zjets = hfake_bkg_Zjets + float((optimization_bkg[bkg][1]["Zjets"]).Integral(c+1,len(cut_range)+2))
+      hfake_bkg_Zgamma = hfake_bkg_Zgamma + float((optimization_bkg[bkg][1]["Zgamma"]).Integral(c+1,len(cut_range)+2))
+      hfake_bkg_VV = hfake_bkg_VV + float((optimization_bkg[bkg][1]["VV"]).Integral(c+1,len(cut_range)+2))
+      hfake_bkg_ST = hfake_bkg_ST + float((optimization_bkg[bkg][1]["ST"]).Integral(c+1,len(cut_range)+2))
 
-      efake_bkg_ttbar = efake_bkg_ttbar + float(optimization_bkg[2]["ttbar"])
-      efake_bkg_Wjets = efake_bkg_Wjets + float(optimization_bkg[2]["Wjets"])
-      efake_bkg_Wgamma = efake_bkg_Wgamma + float(optimization_bkg[2]["Wgamma"])
-      efake_bkg_Zjets = efake_bkg_Zjets + float(optimization_bkg[2]["Zjets"])
-      efake_bkg_Zgamma = efake_bkg_Zgamma + float(optimization_bkg[2]["Zgamma"])
-      efake_bkg_VV = efake_bkg_VV + float(optimization_bkg[2]["VV"])
-      efake_bkg_ST = efake_bkg_ST + float(optimization_bkg[2]["ST"])
+      efake_bkg_ttbar = efake_bkg_ttbar + float((optimization_bkg[bkg][2]["ttbar"]).Integral(c+1,len(cut_range)+2))
+      efake_bkg_Wjets = efake_bkg_Wjets + float((optimization_bkg[bkg][2]["Wjets"]).Integral(c+1,len(cut_range)+2))
+      efake_bkg_Wgamma = efake_bkg_Wgamma + float((optimization_bkg[bkg][2]["Wgamma"]).Integral(c+1,len(cut_range)+2))
+      efake_bkg_Zjets = efake_bkg_Zjets + float((optimization_bkg[bkg][2]["Zjets"]).Integral(c+1,len(cut_range)+2))
+      efake_bkg_Zgamma = efake_bkg_Zgamma + float((optimization_bkg[bkg][2]["Zgamma"]).Integral(c+1,len(cut_range)+2))
+      efake_bkg_VV = efake_bkg_VV + float((optimization_bkg[bkg][2]["VV"]).Integral(c+1,len(cut_range)+2))
+      efake_bkg_ST = efake_bkg_ST + float((optimization_bkg[bkg][2]["ST"]).Integral(c+1,len(cut_range)+2))
 
-      other_bkg_ttbar = other_bkg_ttbar + float(optimization_bkg[3]["ttbar"])
-      other_bkg_Wjets = other_bkg_Wjets + float(optimization_bkg[3]["Wjets"])
-      other_bkg_Wgamma = other_bkg_Wgamma + float(optimization_bkg[3]["Wgamma"])
-      other_bkg_Zjets = other_bkg_Zjets + float(optimization_bkg[3]["Zjets"])
-      other_bkg_Zgamma = other_bkg_Zgamma + float(optimization_bkg[3]["Zgamma"])
-      other_bkg_VV = other_bkg_VV + float(optimization_bkg[3]["VV"])
-      other_bkg_ST = other_bkg_ST + float(optimization_bkg[3]["ST"])
+      other_bkg_ttbar = other_bkg_ttbar + float((optimization_bkg[bkg][3]["ttbar"]).Integral(c+1,len(cut_range)+2))
+      other_bkg_Wjets = other_bkg_Wjets + float((optimization_bkg[bkg][3]["Wjets"]).Integral(c+1,len(cut_range)+2))
+      other_bkg_Wgamma = other_bkg_Wgamma + float((optimization_bkg[bkg][3]["Wgamma"]).Integral(c+1,len(cut_range)+2))
+      other_bkg_Zjets = other_bkg_Zjets + float((optimization_bkg[bkg][3]["Zjets"]).Integral(c+1,len(cut_range)+2))
+      other_bkg_Zgamma = other_bkg_Zgamma + float((optimization_bkg[bkg][3]["Zgamma"]).Integral(c+1,len(cut_range)+2))
+      other_bkg_VV = other_bkg_VV + float((optimization_bkg[bkg][3]["VV"]).Integral(c+1,len(cut_range)+2))
+      other_bkg_ST = other_bkg_ST + float((optimization_bkg[bkg][3]["ST"]).Integral(c+1,len(cut_range)+2))
 
 
     # cutflowLine = region+", "+cutName+": "+str(cut_range[c]) +"\t"+str(N_signal)+ \
@@ -636,7 +652,7 @@ def main(cutName,region,cut_range, allCuts=False):
     # delta Sigma stat over sigma
     dsigma_stat_over_sigma = sigma_stat/sigma 
     print "sigma_STAT/sigma = ", dsigma_stat_over_sigma
-    cutOpt_stat.SetBinContent(c,dsigma_stat_over_sigma)
+    cutOpt_stat.SetBinContent(c+1,dsigma_stat_over_sigma)
 ########################################################################
     # Only used when optimizing individual variables
     # # delta Sigma sys over sigma
@@ -691,19 +707,19 @@ def main(cutName,region,cut_range, allCuts=False):
 
     print "sigma_sys = ", sigma_sys
     dsigma_sys_over_sigma = sigma_sys/sigma
-    print "sigma_SYS/sigma = ", dsigma_sys_over_sigma 
-    cutOpt_sys.SetBinContent(c,dsigma_sys_over_sigma)
+    print "sigma_SYS/sigma = ", dsigma_sys_over_sigma ,"\n"
+    cutOpt_sys.SetBinContent(c+1,dsigma_sys_over_sigma)
 
     sigma_tot = sqrt(sigma_stat**2+sigma_sys**2)
     dsigma_tot_over_sigma = sigma_tot/sigma
-    cutOpt_tot.SetBinContent(c,dsigma_tot_over_sigma)
+    cutOpt_tot.SetBinContent(c+1,dsigma_tot_over_sigma)
     OF.stackedHistogram().createStack("stacked_"+cutName+"_"+version+'/'+region+"_"+cutName+'_'+str(cut_range[c])+'_yields_and_cutflows.root',
       region, 
       cutName+'_'+str(cut_range[c])+'_yields_and_cutflows', cutName, cut_range[c], lumi, version)
 
   # If all cuts is false, create the optimization plots for each cut
   if allCuts == False:
-    bins = str(len(cut_range)-1)
+    bins = str(len(cut_range))
     if not os.path.exists("optimization_outputs_histos_"+version):
         os.makedirs("optimization_outputs_histos_"+version)
     filename = cutName+"_"+bins+"_bins.root"
@@ -724,17 +740,17 @@ def main(cutName,region,cut_range, allCuts=False):
     OF.plots().createPlot(filename,region,cutName, lumi, version)
 ########################################################################
 regs = ["ejets","mujets"]
-from joblib import Parallel, delayed
+#from joblib import Parallel, delayed
 # Uncomment each region one at a time, run, adjust move on to the next.
 # Remember to set cutValue in the doOptimization function!
 
-#cutsPhHFTMVA=[0,0.05,0.10,0.15,0.20,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95]
+cutsPhHFTMVA=[0,0.05,0.10,0.15,0.20,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95]
 # We can either run ejets and mujets in parallel:
 #_ = Parallel(n_jobs=-1, verbose=5, backend="multiprocessing") \
 #( delayed(main)(cutName="ph_HFT_MVA",region=i,cut_range=cutsPhHFTMVA) for i in regs) 
 
 # Or we can run them sequentially:
-# main(cutName="ph_HFT_MVA",region="ejets",cut_range=cutsPhHFTMVA)
+main(cutName="ph_HFT_MVA",region="ejets",cut_range=cutsPhHFTMVA)
 # main(cutName="ph_HFT_MVA",region="mujets",cut_range=cutsPhHFTMVA)
 
 # main(cutName="met_met",region="ejets",cut_range=[20,25,30,35,40,45,50,55,60,65,70])
@@ -752,7 +768,7 @@ from joblib import Parallel, delayed
 # The cut_range is completely irrelavent here.
 # Make sure youv'e set all your cuts correctly!
 
-_ = Parallel(n_jobs=-1, verbose=5, backend="multiprocessing") \
-( delayed(main)(cutName="full_cuts",region=i,cut_range=[1],allCuts = True) for i in regs) 
+#_ = Parallel(n_jobs=-1, verbose=5, backend="multiprocessing") \
+#( delayed(main)(cutName="full_cuts",region=i,cut_range=[1],allCuts = True) for i in regs) 
 #main(cutName="full_cuts",region="ejets",cut_range=[1], allCuts = True)
 #main(cutName="full_cuts",region="mujets",cut_range=[1], allCuts = True)
