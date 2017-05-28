@@ -54,17 +54,17 @@ def main(inputs,cutLabels, channel,region,year,version):
 			cutflow_process = f.Get(process);
 			binContent = cutflow_process.GetBinContent(bin+1)
 			if "ttgamma" in process:
-				print " | " + cutLabels[bin] + " | " + str(binContent) + " | ", # TODO: Double check indices are correct
+				print " | " + cutLabels[bin] + " | " + str("{0:.2f}".format(binContent)) + " | ", # TODO: Double check indices are correct
 				totalMC = totalMC + binContent 
 
 			elif "data" in process:
 				totalDATA = totalDATA + binContent 
-				print str(binContent) + " | ",
+				print str("{0:.2f}".format(binContent)) + " | ",
 			else:	
-				print str(binContent) + " | ",
+				print str("{0:.2f}".format(binContent)) + " | ",
 				totalMC = totalMC + binContent 
 		try:
-			print totalMC," | ",totalDATA/(totalMC), " | "
+			print "{0:.2f}".format(totalMC)," | ","{0:.2f}".format(totalDATA/(totalMC)), " | "
 		except ZeroDivisionError:
 			print "- | - |"
 
